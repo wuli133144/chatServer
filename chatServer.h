@@ -9,7 +9,7 @@
 #include <thread>
 #include <set>
 #include <map>
-
+#include <memory>
 #include "net/Socket.h"
 #include "net/Connection.h"
 #include "net/Application.h"

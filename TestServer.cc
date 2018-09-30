@@ -166,7 +166,7 @@ void OnConnFailClient(ananas::EventLoop* loop, const ananas::SocketAddr& peer) {
 
 
 
-
+ 
 
 #endif
 /////////////////////////////////////////////////////////////////////////////
@@ -174,7 +174,7 @@ int main(int ac, char* av[]) {
    
 	std::call_once(m_flag,[&](){
 	    ananas::LogManager::Instance().Start();
-	    logger = ananas::LogManager::Instance().CreateLog(logALL, logFile,"log");
+	    logger = ananas::LogManager::Instance().CreateLog(logALL, logConsole);
 	});
 	
     

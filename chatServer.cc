@@ -1,6 +1,8 @@
 #include "chatServer.h"
-
-
+#include "ImPduBase.h"
+#include "IM.BaseDefine.pb.h"
+#include "IM.Other.pb.h"
+using namespace IM::BaseDefine;
 
 extern std::shared_ptr<ananas::Logger> logger;
 
@@ -42,7 +44,7 @@ void ServerChat::OnNewConnection(ananas::Connection * conn)
 	if(iter==std::end(_Connections))
 	{
 	     _Connections.insert(conn);
-	    INF(logger)<<"new client connection linked.... now total connection count "<<_Connections.size();	 
+	    INF(logger)<<"new client connection <"<<conn->Peer().ToString()<<">linked.... now total connection count "<<_Connections.size();	 
 	}
 	
 }
@@ -50,32 +52,36 @@ void ServerChat::OnNewConnection(ananas::Connection * conn)
 
 PacketLen_t ServerChat::OnMessage(ananas::Connection * conn, const char * data, ananas :: PacketLen_t len)
 {
-
       std::string req(data,len);
-	  req.append("<Client:request>");
-	  INF(logger)<<req;
+      //safe-thread
+      //INF(logger)<<data;
+      CImPdu *Ppdu=nullptr;
+	  std::unique_ptr<CImPdu>Ppdu_ptr;
+	  Ppdu_ptr=std::unique_ptr<CImPdu>(CImPdu::ReadPdu((uchar_t *)data,(uint32_t)len));
+	  
+      if ((Ppdu=Ppdu_ptr.get()))
+      {
+	        switch(Ppdu->GetCommandId())
+	        {
 
-	  //safe-
-	  std::string sCommand(data,len);
-
-	  if(sCommand.find("beat")!=std::string::npos)
-	  {
-	     INF(logger)<<sCommand;
-		 return len;
-	  }
-
+			    case CID_OTHER_HEARTBEAT:{
+		            INF(logger)<<"heartbeat......";
+					
+		            break;
+			    	}
+				default:
+				    INF(logger)<<"default......";	
+					break;
+			   //case  
+	        }
 	  
 	  
-	  std::string rsp(">>>>>>>>>>response>>>");
-	  std::lock_guard<std::mutex>guard(m_mutex);
-	  if(!_Connections.empty())
-	  {
-	       for(auto &i:_Connections)
-	       {
-	           i->SendPacket(rsp.data(), rsp.size());
-			   INF(logger)<<"send to client message "<<rsp;
-	       }
+      }else{
+            ERR(logger)<<"...ERR......"<<Ppdu;
 	  }
+	  
+	  
+      
 	 	
      return len;
 }
@@ -84,12 +90,10 @@ PacketLen_t ServerChat::OnMessage(ananas::Connection * conn, const char * data, 
 void  ServerChat::OnDisConnect(ananas::Connection * conn)
 {
 
-       INF(logger)<<"client Connection Close"<<conn->Peer().ToString();
-       std::lock_guard<std::mutex>guard(m_mutex);
-	   _Connections.erase(conn);
-	   
-              
-   
+	INF(logger)<<"client Connection Close"<<conn->Peer().ToString();
+	std::lock_guard<std::mutex>guard(m_mutex);
+	_Connections.erase(conn);
+  
 }
 
 void ServerChat::SetSocket(SocketAddr & addr)
