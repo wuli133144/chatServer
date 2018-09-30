@@ -1,0 +1,11 @@
+#CONFIG
+
+
+ip1_server="127.0.0.1"
+port1=8896
+
+ip2_server="127.0.0.1"
+port2=8897
+
+NumThread=1
+

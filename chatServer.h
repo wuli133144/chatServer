@@ -14,7 +14,8 @@
 #include "net/Connection.h"
 #include "net/Application.h"
 #include "util/Logger.h"
-
+#include "ImPduBase.h"
+#include "ConfigFileReader.h"
 
 
 //this class targets to ServerConnnection
@@ -24,9 +25,12 @@ using namespace ananas;
 
 class  ServerChat{
 
+
+
 public:
+   typedef  std::unique_ptr<CImPdu>  message_type;
    ServerChat();
-   void Start(SocketAddr &addr,int threadNum,int argc,char **argv);
+   void Start(int argc,char **argv);
    SocketAddr &getSocket();
    void       SetSocket(SocketAddr &addr);
       
@@ -36,11 +40,25 @@ private:
   std::set<Connection *> _Connections;
   SocketAddr             m_socketaddr;
   int                    m_threadNum;
+  std::set<Connection*>  m_other_Connections;
+  
+
+//handler message
+private:
+  void HandleLoginReq(Connection *,message_type *);
+
+private:
   //static Application app;
   bool _OnInit(int ,char *[]);
   void OnNewConnection(ananas::Connection * conn);
+  void OnClientNewConnection(ananas::Connection * conn);
   PacketLen_t  OnMessage(ananas::Connection * conn, const char * data, ananas :: PacketLen_t len);
   void  OnDisConnect(ananas::Connection * conn);
+  void OnClientConnFail(ananas::EventLoop* loop, const ananas::SocketAddr& peer);
+
+  
+
+  
   	
 
 };

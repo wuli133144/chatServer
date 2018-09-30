@@ -190,8 +190,7 @@ int main(int ac, char* av[]) {
 	#endif
     
 	ServerChat server;
-	SocketAddr addr("127.0.0.1", 9986);
-	server.Start(addr,10,ac,av);
+	server.Start(ac,av);
 	ananas::LogManager::Instance().Stop();
     
     return 0;
